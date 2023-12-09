@@ -15,6 +15,6 @@ for file in os.listdir(map_dir):
         
         for feat in data['features']:
             if 'filters' in feat['properties']:
-                if 3 in feat['properties']['filters']:
+                if 1 in feat['properties']['filters']:
                     print(file + '\t' + str(feat['properties']['filters']))
                     shutil.copy(map_dir + os.sep + file, out_dir)
