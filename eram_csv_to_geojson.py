@@ -53,11 +53,8 @@ for map_group in geomap_groups:
         def_bcg = [k for k,v in bcg.items() if v == max(bcg.values())][0]
 
         filt = dict(m['Filter Group'].value_counts())
-        if len(filt) == 0:
-            def_filt = [0]
-        else: 
-            def_filt = [k for k,v in filt.items() if v == max(filt.values())]
-            def_filt = [int(v) for v in def_filt]
+        def_filt = [k for k,v in filt.items() if v == max(filt.values())]
+        def_filt = [int(v) for v in def_filt]
     
         style = dict(m['Line Style'].value_counts())
         def_style = [k for k,v in style.items() if v == max(style.values())][0]
@@ -152,11 +149,8 @@ for map_group in geomap_groups:
         def_bcg = int([k for k,v in bcg.items() if v == max(bcg.values())][0])
 
         filt = dict(m['Filter Group'].value_counts())
-        if len(filt) == 0:
-            def_filt = [0]
-        else: 
-            def_filt = [k for k,v in filt.items() if v == max(filt.values())]
-            def_filt = [int(v) for v in def_filt]
+        def_filt = [k for k,v in filt.items() if v == max(filt.values())]
+        def_filt = [int(v) for v in def_filt]
     
         style = dict(m['Style'].value_counts())
         def_style = [k for k,v in style.items() if v == max(style.values())][0]
