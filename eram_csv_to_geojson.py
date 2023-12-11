@@ -31,7 +31,7 @@ line_csv = os.path.join(dl_dir, LINE_FILE)
 symbol_csv = os.path.join(dl_dir, SYMBOL_FILE)
 
 ############################# LINE DATA #############################
-df = pd.read_csv(line_csv)
+df = pd.read_csv(line_csv, skiprows=lambda x: x in [0], skipfooter=2)
 
 df['start_lat'], df['start_lon'] = convert_coord(df['Start Lat Lon'])
 df['end_lat'], df['end_lon'] = convert_coord(df['End Lat Lon'])
@@ -128,7 +128,7 @@ for map_group in geomap_groups:
             out.write(data)
 
 ############################ SYMBOL DATA ############################
-df = pd.read_csv(symbol_csv)
+df = pd.read_csv(symbol_csv, skiprows=lambda x: x in [0], skipfooter=2)
 
 df['lat'], df['lon'] = convert_coord(df['Lat Lon'])
 df = df.drop('Lat Lon', axis=1)
