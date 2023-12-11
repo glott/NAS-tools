@@ -99,9 +99,9 @@ for map_group in geomap_groups:
             if bcg != def_bcg:
                 feat['properties']['bcg'] = bcg
     
-            filt = r['Filter Group']
-            if filt not in def_filt:
-                feat['properties']['filters'] = [filt]
+            filt = [int(v) for v in [r['Filter Group']]]
+            if filt != def_filt:
+                feat['properties']['filters'] = filt
     
             style = r['Line Style']
             if style != def_style:
@@ -241,9 +241,9 @@ for map_group in geomap_groups:
             if bcg != def_bcg:
                 feat['properties']['bcg'] = bcg
     
-            filt = r['Filter Group']
-            if filt not in def_filt:
-                feat['properties']['filters'] = [filt]
+            filt = [int(v) for v in [r['Filter Group']]]
+            if filt != def_filt:
+                feat['properties']['filters'] = filt
     
             style = r['Style']
             if style != def_style:
