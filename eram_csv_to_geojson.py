@@ -3,8 +3,10 @@
 #####################################################################
 
 ######################## MODIFY THESE VALUES ########################
-LINE_FILE = 'ZMA GeoMap - Lines.csv'
-SYMBOL_FILE = 'ZMA GeoMap - Symbols.csv'
+LINE_FILE = 'ZMA Geomap - Lines.csv'
+SYMBOL_FILE = 'ZMA Geomap - Symbols.csv'
+LINES_HEADER = 1
+LINES_FOOTER = 2
 
 ######################### DO NOT EDIT BELOW #########################
 import csv, json
@@ -31,7 +33,7 @@ line_csv = os.path.join(dl_dir, LINE_FILE)
 symbol_csv = os.path.join(dl_dir, SYMBOL_FILE)
 
 ############################# LINE DATA #############################
-df = pd.read_csv(line_csv, engine='python', skiprows=lambda x: x in [0], skipfooter=2)
+df = pd.read_csv(line_csv, engine='python', skiprows=LINES_HEADER, skipfooter=LINES_FOOTER)
 
 df['start_lat'], df['start_lon'] = convert_coord(df['Start Lat Lon'])
 df['end_lat'], df['end_lon'] = convert_coord(df['End Lat Lon'])
@@ -128,7 +130,7 @@ for map_group in geomap_groups:
             out.write(data)
 
 ############################ SYMBOL DATA ############################
-df = pd.read_csv(symbol_csv, engine='python', skiprows=lambda x: x in [0], skipfooter=2)
+df = pd.read_csv(symbol_csv, engine='python', skiprows=LINES_HEADER, skipfooter=LINES_FOOTER)
 
 df['lat'], df['lon'] = convert_coord(df['Lat Lon'])
 df = df.drop('Lat Lon', axis=1)
