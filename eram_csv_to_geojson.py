@@ -3,6 +3,7 @@
 #####################################################################
 
 ######################## MODIFY THESE VALUES ########################
+
 LINE_FILE = 'ZOA Geomap - Lines.csv'
 SYMBOL_FILE = 'ZOA Geomap - Symbols.csv'
 TEXT_FILE = 'ZOA Geomap - Texts.csv'
