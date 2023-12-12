@@ -3,8 +3,9 @@
 #####################################################################
 
 ######################## MODIFY THESE VALUES ########################
-LINE_FILE = 'ZMA Geomap - Lines.csv'
-SYMBOL_FILE = 'ZMA Geomap - Symbols.csv'
+LINE_FILE = 'ZOA Geomap - Lines.csv'
+SYMBOL_FILE = 'ZOA Geomap - Symbols.csv'
+TEXT_FILE = 'ZOA Geomap - Texts.csv'
 ROWS_HEADER = 1
 ROWS_FOOTER = 2
 
@@ -31,6 +32,7 @@ def convert_coord(col):
 dl_dir = os.path.join(str(pathlib.Path.home() / 'Downloads'))
 line_csv = os.path.join(dl_dir, LINE_FILE)
 symbol_csv = os.path.join(dl_dir, SYMBOL_FILE)
+text_csv = os.path.join(dl_dir, TEXT_FILE)
 
 ############################# LINE DATA #############################
 df = pd.read_csv(line_csv, engine='python', skiprows=ROWS_HEADER, skipfooter=ROWS_FOOTER)
@@ -295,6 +297,122 @@ for map_group in geomap_groups:
                     feat['properties']['yOffset'] = yoff
         
                 data['features'].append(feat)
+        
+        data = json.dumps(data, separators=(',', ':'))
+
+        out_dir = os.path.join(dl_dir, map_group)
+        if not os.path.exists(out_dir):
+           os.makedirs(out_dir)
+
+        out_name = f'Object #{str(id).zfill(3)} ({obj_type}).geojson'
+        out_name = map_group + '-' + out_name
+        out_file = os.path.join(out_dir, out_name)
+        
+        with open(out_file, 'w') as out:
+            print(f'{map_group} / {out_name}')
+            out.write(data)
+
+############################ TEXT DATA ############################
+df = pd.read_csv(text_csv, engine='python', skiprows=ROWS_HEADER, skipfooter=ROWS_FOOTER)
+
+df['lat'], df['lon'] = convert_coord(df['Lat Lon'])
+df = df.drop('Lat Lon', axis=1)
+df['Filter Group'] = df['Filter Group'].fillna(0)
+
+geomap_groups = df['Geomap Id'].unique()
+
+for map_group in geomap_groups:
+    map = df[df['Geomap Id'].str.contains(map_group)]
+    group_ids = map['Group Id'].unique()
+
+    for id in group_ids:
+        m = map[map['Group Id'] == id]
+        
+        obj_type = m['Object Type'].unique()[0]
+
+        data = {}
+        data['type'] = 'FeatureCollection'
+        data['features'] = []
+        
+        text_bcg = dict(m['BCG Group'].value_counts())
+        def_text_bcg = [k for k,v in text_bcg.items() if v == max(text_bcg.values())]
+
+        def_text_bcg = int(def_text_bcg[0])
+
+        text_filt = dict(m['Filter Group'].value_counts())
+        def_text_filt = str([k for k,v in text_filt.items() if v == max(text_filt.values())][0])
+        def_text_filt = [int(v) for v in def_text_filt.split(' ')]
+        
+        text_size = dict(m['Font Size'].value_counts())
+        def_text_size = int([k for k,v in text_size.items() if v == max(text_size.values())][0])
+
+        underline = dict(m['Underline'].value_counts())
+        def_underline = 'Checked' == [k for k,v in underline.items() if v == max(underline.values())][0]
+
+        xoffset = dict(m['XPixel Offset'].value_counts())
+        def_xoff = int([k for k,v in xoffset.items() if v == max(xoffset.values())][0])
+
+        yoffset = dict(m['YPixel Offset'].value_counts())
+        def_yoff = int([k for k,v in yoffset.items() if v == max(yoffset.values())][0])
+        def_text_feat = {
+                    'type': 'Feature', 
+                    'geometry': 
+                    {
+                        'type': 'Point', 
+                        'coordinates': [180, 90]
+                    },
+                    'properties':
+                    {
+                        'isTextDefaults': True,
+                        'bcg': def_text_bcg,
+                        'filters': def_text_filt,
+                        'size': def_text_size,
+                        'underline': def_underline,
+                        'opaque': False,
+                        'xOffset': def_xoff,
+                        'yOffset': def_yoff
+                    }
+                }
+        data['features'].append(def_text_feat)
+
+        for idx, r in m.iterrows():
+            feat = {
+                    'type': 'Feature', 
+                    'geometry': 
+                    {
+                        'type': 'Point', 
+                        'coordinates': []
+                    },
+                    'properties': {}
+                }
+            feat['geometry']['coordinates'] = [r['lon'], r['lat']]
+            bcg = r['BCG Group']
+            if bcg != def_text_bcg:
+                feat['properties']['bcg'] = bcg
+    
+            filt = [int(v) for v in str(r['Filter Group']).split(' ')]
+            if filt != def_text_filt:
+                feat['properties']['filters'] = filt
+    
+            size = int(r['Font Size'])
+            if size != def_text_size:
+                feat['properties']['size'] = size
+            
+            feat['properties']['text'] = [r['Text Strings']]
+
+            underline = 'Checked' == r['Underline']
+            if underline != def_underline:
+                feat['properties']['underline'] = underline
+
+            xoff = int(r['XPixel Offset'])
+            if xoff != def_xoff:
+                feat['properties']['xOffset'] = xoff
+
+            yoff = int(r['YPixel Offset'])
+            if yoff != def_yoff:
+                feat['properties']['yOffset'] = yoff
+    
+            data['features'].append(feat)
         
         data = json.dumps(data, separators=(',', ':'))
 
