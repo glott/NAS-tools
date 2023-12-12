@@ -60,7 +60,7 @@ for map_group in geomap_groups:
 
         filt = dict(m['Filter Group'].value_counts())
         def_filt = [k for k,v in filt.items() if v == max(filt.values())]
-        def_filt = [int(v) for v in def_filt]
+        def_filt = [int(float(v)) for v in def_filt]
     
         style = dict(m['Line Style'].value_counts())
         def_style = [k for k,v in style.items() if v == max(style.values())][0]
@@ -105,7 +105,7 @@ for map_group in geomap_groups:
             if bcg != def_bcg:
                 feat['properties']['bcg'] = bcg
     
-            filt = [int(v) for v in [r['Filter Group']]]
+            filt = [int(float(v)) for v in [r['Filter Group']]]
             if filt != def_filt:
                 feat['properties']['filters'] = filt
     
@@ -155,7 +155,7 @@ for map_group in geomap_groups:
 
         filt = dict(m['Filter Group'].value_counts())
         def_filt = [k for k,v in filt.items() if v == max(filt.values())]
-        def_filt = [int(v) for v in def_filt]
+        def_filt = [int(float(v)) for v in def_filt]
     
         style = dict(m['Style'].value_counts())
         def_style = [k for k,v in style.items() if v == max(style.values())][0]
@@ -196,7 +196,7 @@ for map_group in geomap_groups:
 
             text_filt = dict(m['Text Filters'].value_counts())
             def_text_filt = str([k for k,v in text_filt.items() if v == max(text_filt.values())][0])
-            def_text_filt = [int(v) for v in def_text_filt.split(' ')]
+            def_text_filt = [int(float(v)) for v in def_text_filt.split(' ')]
             
             text_size = dict(m['Text Font Size'].value_counts())
             def_text_size = int([k for k,v in text_size.items() if v == max(text_size.values())][0])
@@ -246,7 +246,7 @@ for map_group in geomap_groups:
             if bcg != def_bcg:
                 feat['properties']['bcg'] = bcg
     
-            filt = [int(v) for v in [r['Filter Group']]]
+            filt = [int(float(v)) for v in [r['Filter Group']]]
             if filt != def_filt:
                 feat['properties']['filters'] = filt
     
@@ -261,6 +261,9 @@ for map_group in geomap_groups:
             data['features'].append(feat)
 
             if not sym_only:
+                if np.isnan(r['Text BCG Group']):
+                    continue
+
                 feat = {
                         'type': 'Feature', 
                         'geometry': 
@@ -275,7 +278,7 @@ for map_group in geomap_groups:
                 if bcg != def_text_bcg:
                     feat['properties']['bcg'] = bcg
         
-                filt = [int(v) for v in str(r['Text Filters']).split(' ')]
+                filt = [int(float(v)) for v in str(r['Text Filters']).split(' ')]
                 if filt != def_text_filt:
                     feat['properties']['filters'] = filt
         
@@ -356,7 +359,7 @@ for map_group in geomap_groups:
 
         text_filt = dict(m['Filter Group'].value_counts())
         def_text_filt = str([k for k,v in text_filt.items() if v == max(text_filt.values())][0])
-        def_text_filt = [int(v) for v in def_text_filt.split(' ')]
+        def_text_filt = [int(float(v)) for v in def_text_filt.split(' ')]
         
         text_size = dict(m['Font Size'].value_counts())
         def_text_size = int([k for k,v in text_size.items() if v == max(text_size.values())][0])
@@ -405,7 +408,7 @@ for map_group in geomap_groups:
             if bcg != def_text_bcg:
                 feat['properties']['bcg'] = bcg
     
-            filt = [int(v) for v in str(r['Filter Group']).split(' ')]
+            filt = [int(float(v)) for v in str(r['Filter Group']).split(' ')]
             if filt != def_text_filt:
                 feat['properties']['filters'] = filt
     
