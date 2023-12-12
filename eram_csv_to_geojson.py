@@ -34,6 +34,8 @@ line_csv = os.path.join(dl_dir, LINE_FILE)
 symbol_csv = os.path.join(dl_dir, SYMBOL_FILE)
 text_csv = os.path.join(dl_dir, TEXT_FILE)
 
+created_files = []
+
 ############################# LINE DATA #############################
 df = pd.read_csv(line_csv, engine='python', skiprows=ROWS_HEADER, skipfooter=ROWS_FOOTER)
 
@@ -116,8 +118,6 @@ for map_group in geomap_groups:
                 feat['properties']['thickness'] = thick
     
             data['features'].append(feat)
-        
-        data = json.dumps(data, separators=(',', ':'))
 
         out_dir = os.path.join(dl_dir, map_group)
         if not os.path.exists(out_dir):
@@ -129,7 +129,8 @@ for map_group in geomap_groups:
         
         with open(out_file, 'w') as out:
             print(f'{map_group} / {out_name}')
-            out.write(data)
+            out.write(json.dumps(data, separators=(',', ':')))
+            created_files.append(out_file)
 
 ############################ SYMBOL DATA ############################
 df = pd.read_csv(symbol_csv, engine='python', skiprows=ROWS_HEADER, skipfooter=ROWS_FOOTER)
@@ -297,8 +298,6 @@ for map_group in geomap_groups:
                     feat['properties']['yOffset'] = yoff
         
                 data['features'].append(feat)
-        
-        data = json.dumps(data, separators=(',', ':'))
 
         out_dir = os.path.join(dl_dir, map_group)
         if not os.path.exists(out_dir):
@@ -308,9 +307,14 @@ for map_group in geomap_groups:
         out_name = map_group + '-' + out_name
         out_file = os.path.join(out_dir, out_name)
         
+        if out_file in created_files:
+            out_name = out_name.replace(' (', 'S (')
+            out_file = os.path.join(out_dir, out_name)
+
         with open(out_file, 'w') as out:
             print(f'{map_group} / {out_name}')
-            out.write(data)
+            out.write(json.dumps(data, separators=(',', ':')))
+            created_files.append(out_file)
 
 ############################ TEXT DATA ############################
 df = pd.read_csv(text_csv, engine='python', skiprows=ROWS_HEADER, skipfooter=ROWS_FOOTER)
@@ -413,8 +417,6 @@ for map_group in geomap_groups:
                 feat['properties']['yOffset'] = yoff
     
             data['features'].append(feat)
-        
-        data = json.dumps(data, separators=(',', ':'))
 
         out_dir = os.path.join(dl_dir, map_group)
         if not os.path.exists(out_dir):
@@ -424,6 +426,10 @@ for map_group in geomap_groups:
         out_name = map_group + '-' + out_name
         out_file = os.path.join(out_dir, out_name)
         
+        if out_file in created_files:
+            out_name = out_name.replace(' (', 'T (')
+            out_file = os.path.join(out_dir, out_name)
+
         with open(out_file, 'w') as out:
             print(f'{map_group} / {out_name}')
-            out.write(data)
+            out.write(json.dumps(data, separators=(',', ':')))
