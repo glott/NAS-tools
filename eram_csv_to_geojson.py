@@ -308,8 +308,19 @@ for map_group in geomap_groups:
         out_file = os.path.join(out_dir, out_name)
         
         if out_file in created_files:
-            out_name = out_name.replace(' (', 'S (')
-            out_file = os.path.join(out_dir, out_name)
+            with open(out_file, 'r') as json_file:
+                data_in = json.load(json_file)
+                for feat in data_in['features']:
+                    if 'isTextDefaults' in feat['properties']:
+                        if feat['properties'] != def_text_feat['properties']:
+                            out_name = out_name.replace(' (', 'T (')
+                            out_file = os.path.join(out_dir, out_name)
+                    elif 'isSymbolDefaults' in feat['properties']:
+                        if feat['properties'] != def_sym_feat['properties']:
+                            out_name = out_name.replace(' (', 'S (')
+                            out_file = os.path.join(out_dir, out_name)
+                if 'T (' not in out_name and 'S (' not in out_name:
+                    data['features'] = data_in['features'] + data['features']
 
         with open(out_file, 'w') as out:
             print(f'{map_group} / {out_name}')
@@ -427,8 +438,15 @@ for map_group in geomap_groups:
         out_file = os.path.join(out_dir, out_name)
         
         if out_file in created_files:
-            out_name = out_name.replace(' (', 'T (')
-            out_file = os.path.join(out_dir, out_name)
+            with open(out_file, 'r') as json_file:
+                data_in = json.load(json_file)
+                for feat in data_in['features']:
+                    if 'isTextDefaults' in feat['properties']:
+                        if feat['properties'] != def_text_feat['properties']:
+                            out_name = out_name.replace(' (', 'T (')
+                            out_file = os.path.join(out_dir, out_name)
+                if 'T (' not in out_name:
+                    data['features'] = data_in['features'] + data['features']
 
         with open(out_file, 'w') as out:
             print(f'{map_group} / {out_name}')
