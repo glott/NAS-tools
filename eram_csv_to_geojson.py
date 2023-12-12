@@ -195,8 +195,12 @@ for map_group in geomap_groups:
             def_text_bcg = int(def_text_bcg[0])
 
             text_filt = dict(m['Text Filters'].value_counts())
-            def_text_filt = str([k for k,v in text_filt.items() if v == max(text_filt.values())][0])
-            def_text_filt = [int(float(v)) for v in def_text_filt.split(' ')]
+            def_text_filt = [k for k,v in text_filt.items() if v == max(text_filt.values())]
+            if len(def_text_filt) > 0:
+                def_text_filt = str(def_text_filt[0])
+                def_text_filt = [int(float(v)) for v in def_text_filt.split(' ')]
+            else:
+                def_text_filt = []
             
             text_size = dict(m['Text Font Size'].value_counts())
             def_text_size = int([k for k,v in text_size.items() if v == max(text_size.values())][0])
@@ -261,7 +265,7 @@ for map_group in geomap_groups:
             data['features'].append(feat)
 
             if not sym_only:
-                if np.isnan(r['Text BCG Group']):
+                if np.isnan(r['Text BCG Group']) or np.isnan(r['Text Filters']):
                     continue
 
                 feat = {
