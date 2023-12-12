@@ -9,6 +9,8 @@ TEXT_FILE = 'ZOA Geomap - Texts.csv'
 ROWS_HEADER = 1
 ROWS_FOOTER = 2
 
+OUT_DIR = 'ZOA Geomaps'
+
 ######################### DO NOT EDIT BELOW #########################
 import csv, json
 import pandas as pd
@@ -30,6 +32,8 @@ def convert_coord(col):
     return col_out
 
 dl_dir = os.path.join(str(pathlib.Path.home() / 'Downloads'))
+out_base_dir = os.path.join(dl_dir, OUT_DIR)
+
 line_csv = os.path.join(dl_dir, LINE_FILE)
 symbol_csv = os.path.join(dl_dir, SYMBOL_FILE)
 text_csv = os.path.join(dl_dir, TEXT_FILE)
@@ -119,7 +123,7 @@ for map_group in geomap_groups:
     
             data['features'].append(feat)
 
-        out_dir = os.path.join(dl_dir, map_group)
+        out_dir = os.path.join(out_base_dir, map_group)
         if not os.path.exists(out_dir):
            os.makedirs(out_dir)
 
@@ -306,7 +310,7 @@ for map_group in geomap_groups:
         
                 data['features'].append(feat)
 
-        out_dir = os.path.join(dl_dir, map_group)
+        out_dir = os.path.join(out_base_dir, map_group)
         if not os.path.exists(out_dir):
            os.makedirs(out_dir)
 
@@ -436,7 +440,7 @@ for map_group in geomap_groups:
     
             data['features'].append(feat)
 
-        out_dir = os.path.join(dl_dir, map_group)
+        out_dir = os.path.join(out_base_dir, map_group)
         if not os.path.exists(out_dir):
            os.makedirs(out_dir)
 
