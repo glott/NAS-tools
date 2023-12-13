@@ -155,8 +155,9 @@ def merge_files(fc_out, in_dir_name):
         out_name = f'{in_dir_name} - FILTER {str(i).zfill(2)}.geojson'
         out_file = os.path.join(out_dir_base, out_name)
         
-        with open(out_file, 'w') as out:
-            out.write(json.dumps(fc, separators=(',', ':')))
+        if len(fc['features']) > 0:
+            with open(out_file, 'w') as out:
+                out.write(json.dumps(fc, separators=(',', ':')))
         
     print(f'Merged {in_dir_name}.')
 
