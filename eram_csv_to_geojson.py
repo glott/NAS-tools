@@ -266,8 +266,10 @@ for map_group in geomap_groups:
             size = int(r['Font Size'])
             if size != def_size:
                 feat['properties']['size'] = size
-    
-            data['features'].append(feat)
+
+            if not (obj_type == 'SupplementalSymbol' and style == 'Obstruction1' \
+                and not pd.isna(r['Text Strings']) and len(r['Text Strings']) != 0):
+                data['features'].append(feat)
 
             if not sym_only:
                 if pd.isna(r['Text BCG Group']) or pd.isna(r['Text Filters']):
