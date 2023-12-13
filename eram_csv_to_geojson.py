@@ -270,7 +270,7 @@ for map_group in geomap_groups:
             data['features'].append(feat)
 
             if not sym_only:
-                if np.isnan(r['Text BCG Group']) or np.isnan(r['Text Filters']):
+                if pd.isna(r['Text BCG Group']) or pd.isna(r['Text Filters']):
                     continue
 
                 feat = {
