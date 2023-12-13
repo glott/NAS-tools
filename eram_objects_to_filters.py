@@ -90,6 +90,8 @@ def get_defaults(feats, defs, def_filt):
     
     for feat in feats:
         for d in defs.keys():
+            if d not in feat['properties']:
+                continue
             if feat['properties'][d] not in defs[d]:
                 defs[d][feat['properties'][d]] = 1
             else:
