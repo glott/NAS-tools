@@ -14,6 +14,8 @@ dl_dir = os.path.join(str(pathlib.Path.home() / 'Downloads'))
 in_dir = os.path.join(dl_dir, MAP_DIR)
 out_dir_base = os.path.join(dl_dir, OUT_DIR)
 
+DEBUG = False
+
 if not os.path.exists(out_dir_base):
     os.makedirs(out_dir_base)
 
@@ -73,6 +75,9 @@ def process_files(in_dir):
                         p = add_missing_props(p, def_text_prop)
                     else:
                         p = add_missing_props(p, def_sym_prop)
+
+                if DEBUG:
+                    p['object'] = int('0' + re.sub('[^0-9]', '', os.path.basename(file)))
 
                 add_feat_to_fc(feat, p['filters'])
 
