@@ -297,11 +297,11 @@ for map_group in geomap_groups:
                 if size != def_text_size:
                     feat['properties']['size'] = size
                 
-                if not pd.isna(r['Text Strings']) and len(r['Text Strings']) != 0 \
-                    and '\r\n' in r['Text Strings']:
-                    feat['properties']['text'] = r['Text Strings'].split('\r\n')
-                else:
-                    feat['properties']['text'] = [r['Text Strings']]
+                if not pd.isna(r['Text Strings']) and len(r['Text Strings']) != 0:
+                    if '\r\n' in r['Text Strings']:
+                        feat['properties']['text'] = r['Text Strings'].split('\r\n')
+                    else:
+                        feat['properties']['text'] = [r['Text Strings']]
 
                 underline = 'Checked' == r['Text Underline']
                 if underline != def_underline:
@@ -431,11 +431,11 @@ for map_group in geomap_groups:
             if size != def_text_size:
                 feat['properties']['size'] = size
             
-            if not pd.isna(r['Text Strings']) and len(r['Text Strings']) != 0 \
-                    and '\r\n' in r['Text Strings']:
+            if not pd.isna(r['Text Strings']) and len(r['Text Strings']) != 0:
+                if '\r\n' in r['Text Strings']:
                     feat['properties']['text'] = r['Text Strings'].split('\r\n')
-            else:
-                feat['properties']['text'] = [r['Text Strings']]
+                else:
+                    feat['properties']['text'] = [r['Text Strings']]
 
             underline = 'Checked' == r['Underline']
             if underline != def_underline:
