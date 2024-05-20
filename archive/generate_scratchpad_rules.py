@@ -1,3 +1,5 @@
+from generate_ulid import gen_ulid
+
 ######## GENERATE SCRATCHPAD RULES ########
 tem = """                        {
                             \"id\": \"%ID%\",
