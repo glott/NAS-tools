@@ -104,7 +104,8 @@ def get_defaults(feats, defs, def_filt):
 
     feat = def_feat.copy()
     for d in defs.keys():
-        feat['properties'][d] = max(defs[d], key = lambda x: defs[d][x])
+        if len(defs[d]) != 0:
+            feat['properties'][d] = max(defs[d], key = lambda x: defs[d][x])
     return feat
 
 def remove_props(feat, def_props):
