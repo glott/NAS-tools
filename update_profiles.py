@@ -52,6 +52,14 @@ def copy_files(source_dir, dest_dir, sub_dirs):
     prev_header = ''
     for dir_ in sub_dirs:
         root_dir = os.path.join(source_dir, dir_)
+        if 'Aliases' in root_dir:
+            root_dir = root_dir.replace(os.sep + 'Aliases', '')
+            file_path = os.path.join(root_dir, 'myaliases.txt')
+            if os.path.isfile(file_path):
+                dest_path = os.path.join(dest_dir, 'Aliases') + os.sep + 'myaliases.txt'
+                shutil.copy(file_path, dest_path)
+                print('\nUpdated \'Aliases/myaliases.txt\'')
+            continue
         for root, _, files in os.walk(root_dir):
             for file in files:
                 if file.endswith('.json') and 'Backup' not in root:
@@ -77,6 +85,6 @@ print('\n=============================================\n')
 backup_files(CRC_PATH, ['Profiles', 'PrefSets', 'Aliases'])
 
 if RUN_UPDATE and os.path.exists(UPDATE_DIR):
-    copy_files(UPDATE_DIR, CRC_PATH, ['Profiles', 'PrefSets'])
+    copy_files(UPDATE_DIR, CRC_PATH, ['Profiles', 'PrefSets', 'Aliases'])
 
 input('\nPress enter to close...')
