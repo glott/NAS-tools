@@ -8,14 +8,10 @@ import json, os
 crc_profiles = os.getenv('LOCALAPPDATA') + R'\CRC\Profiles'
 
 for file in os.listdir(crc_profiles):
-    if '.json' not in file:
+    if '.json' not in file or file[3] != '2':
         continue
         
     f = os.path.join(crc_profiles, file)
-    if file[3] != '2':
-        os.rename(f, f.replace('.json', '.bak'))
-        continue
-    
     data = {}
     with open(f) as json_file:
         data = json.load(json_file)
