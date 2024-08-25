@@ -50,6 +50,7 @@ def backup_files(main_dir, sub_dirs):
 
 def copy_files(source_dir, dest_dir, sub_dirs):
     prev_header = ''
+    asdex_print = False
     for dir_ in sub_dirs:
         root_dir = os.path.join(source_dir, dir_)
         if 'Aliases' in root_dir:
@@ -67,11 +68,21 @@ def copy_files(source_dir, dest_dir, sub_dirs):
                     header = os.sep.join(os.path.relpath(file_path, source_dir).split(os.sep)[:-1])
                     if prev_header != header:
                         prev_header = header
-                        print('\nUpdated \'' + header.replace(os.sep, '/') + '\'')
+
+                        if not asdex_print and 'ASDEX' in root:
+                            print('\nUpdated \'PrefSets/ASDEX\'')
+                            asdex_print = True
+                        
+                        if 'ASDEX' in root:
+                            print('    ' + header.replace(os.sep, '/') \
+                                .replace('PrefSets/ASDEX/', ''))
+                        else:
+                            print('\nUpdated \'' + header.replace(os.sep, '/') + '\'')
 
                     dest_path = os.path.join(dest_dir, header.replace('/', os.sep))
                     shutil.copy(file_path, dest_path)
-                    print('    ' + file.split('.')[0])
+                    if not 'ASDEX' in root:
+                        print('    ' + file.split('.')[0])
 
 print('=============================================')        
 print('======== CRC PROFILE BACKUP/UPDATER =========')
