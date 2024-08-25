@@ -35,6 +35,11 @@ def backup_files(main_dir, sub_dirs):
     with zipfile.ZipFile(output_zip, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for root_dir in sub_dirs:
             root_dir = os.path.join(main_dir, root_dir)
+            if 'Aliases' in root_dir:
+                aliases = os.path.join(root_dir, 'myaliases.txt')
+                if os.path.isfile(aliases):
+                   zipf.write(aliases, 'Aliases/myaliases.txt')
+                continue
             for root, _, files in os.walk(root_dir):
                 for file in files:
                     if not file.endswith('.lnk'):
@@ -69,7 +74,7 @@ print(f'RUN_UPDATE = {RUN_UPDATE}')
 print(f'UPDATE_DIR = {UPDATE_DIR}')
 print('\n=============================================\n')
 
-backup_files(CRC_PATH, ['Profiles', 'PrefSets'])
+backup_files(CRC_PATH, ['Profiles', 'PrefSets', 'Aliases'])
 
 if RUN_UPDATE and os.path.exists(UPDATE_DIR):
     copy_files(UPDATE_DIR, CRC_PATH, ['Profiles', 'PrefSets'])
