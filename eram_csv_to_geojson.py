@@ -32,7 +32,7 @@ def convert_coord(col):
             col_out[j][i] = round(q * (d + m / 60 + s / 3600), 6)
     return col_out
 
-dl_dir = os.path.join(str(pathlib.Path.home() / 'Downloads'))
+dl_dir = os.path.dirname(os.path.realpath(__file__))
 out_base_dir = os.path.join(dl_dir, OUT_DIR)
 
 line_csv = os.path.join(dl_dir, LINE_FILE)

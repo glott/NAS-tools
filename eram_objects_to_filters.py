@@ -10,7 +10,7 @@ OUT_DIR = 'ZOA Geomaps - Merged'
 ######################### DO NOT EDIT BELOW #########################
 import csv, json, os, pathlib, re
 
-dl_dir = os.path.join(str(pathlib.Path.home() / 'Downloads'))
+dl_dir = os.path.dirname(os.path.realpath(__file__))
 in_dir = os.path.join(dl_dir, MAP_DIR)
 out_dir_base = os.path.join(dl_dir, OUT_DIR)
 
