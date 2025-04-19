@@ -80,6 +80,9 @@ def copy_files(source_dir, dest_dir, sub_dirs):
                             print('\nUpdated \'' + header.replace(os.sep, '/') + '\'')
 
                     dest_path = os.path.join(dest_dir, header.replace('/', os.sep))
+                    if not os.path.exists(dest_path):
+                        os.makedirs(dest_path)
+
                     shutil.copy(file_path, dest_path)
                     if not 'ASDEX' in root:
                         print('    ' + file.split('.')[0])
