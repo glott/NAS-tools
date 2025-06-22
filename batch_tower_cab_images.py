@@ -13,4 +13,4 @@ url = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapSer
 airports = ['MIA', 'TPA', 'RSW', 'PBI', 'NQX', 'APF', 'BCT', 'BKV', 'BOW', 'EYW', 'FLL', 'FMY', 'FPR', 'FXE', 'HST', 'HWO', 'LAL', 'MCF', 'OPF', 'PGD', 'PIE', 'PMP', 'SPG', 'SRQ', 'SUA', 'TMB', 'VRB', '06FA']
 
 for airport in airports:
-	os.system('start cmd /k ' + os.path.join(os.getcwd(), 'TowerCabImageGenerator.exe') + ' ' + airport + ' ' + url)
+	os.system(os.path.join(os.getcwd(), 'TowerCabImageGenerator.exe') + ' ' + airport + ' ' + url)
