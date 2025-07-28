@@ -1,0 +1,215 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[ ]:
+
+
+FILE_IN = 'adapt.txt'
+
+
+# In[ ]:
+
+
+import os, time, re, json, subprocess, sys
+import importlib.util as il
+
+if None in [il.find_spec('python-ulid'), il.find_spec('pyperclip'), il.find_spec('pandas')]:
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'python-ulid']);
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pyperclip']);
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pandas']);
+    
+from ulid import ULID
+import pyperclip
+import pandas as pd
+
+def gen_ulid():
+    return str(ULID.from_timestamp(time.time()))
+
+def convert_coord(c):
+    c = str(c)
+    j = len(c) - 6
+    d = int(c[0:2 + j])
+    m = int(c[2 + j:4 + j])
+    s = float(c[4 + j:6 + j] + '.' + c[6 + j:])
+    q = 1 if j == 0 else -1
+    coord = round(q * (d + m / 60 + s / 3600), 6)
+    
+    return coord
+
+def pprint(dict):
+    print(json.dumps(dict, indent=2))
+
+def comma_followed_by_number(s):
+    for i, char in enumerate(s[:-1]):
+        if char == ',' and s[i+1].isdigit():
+            return True
+    return False
+
+def extract_table_section_from_file(section_header, filename, offset=0):
+    offset *= 3
+    section_header = '******* ' + section_header + ' *******'
+
+    downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
+    with open(os.path.join(downloads_folder, filename), "r") as file:
+        lines = file.readlines()
+
+    extracted_lines = []
+    inside_section = False
+    end_marker_count = 0
+
+    for line in lines:
+        if section_header in line:
+            inside_section = True
+            extracted_lines.append(line)
+            continue
+
+        if inside_section:
+            if end_marker_count > offset:
+                extracted_lines.append(line)
+            # Count lines that are mostly dashes
+            if line.strip().startswith('---'):
+                end_marker_count += 1
+                if end_marker_count >= 3 + offset:
+                    break
+
+    return "".join(extracted_lines)
+
+def remove_dash_lines(text):
+    cleaned_lines = [
+        line for line in text.splitlines()
+        if not line.strip().startswith("---")
+    ]
+    return "\n".join(cleaned_lines)
+
+def convert_pipe_text_to_csv(multi_line_text):
+    csv_lines = []
+    for line in multi_line_text.splitlines():
+        if not line.strip():
+            continue
+        if '|' not in line:
+            continue
+        
+        fields = [field.strip() for field in line.strip('|').split('|')]
+        csv_line = '|'.join(fields)
+        csv_lines.append(csv_line)
+
+    return '\n'.join(csv_lines)
+
+def csv_text_to_dataframe(csv_text):
+    lines = [line.strip() for line in csv_text.strip().split('\n') if line.strip()]
+    
+    headers = [h.strip() for h in lines[0].split('|')]
+    
+    data = []
+    for line in lines[1:]:
+        fields = [f.strip() for f in line.split('|')]
+        data.append(fields)
+    
+    df = pd.DataFrame(data, columns=headers)
+    return df
+
+def read_adaptation_section(section_header, filename, offset=0):
+    text = extract_table_section_from_file(section_header, filename, offset)
+    text = remove_dash_lines(text)
+    text = convert_pipe_text_to_csv(text)
+    
+    return csv_text_to_dataframe(text)
+
+
+# In[ ]:
+
+
+filename = FILE_IN
+send = read_adaptation_section('SENDING_FP_TCP', filename)
+rec = read_adaptation_section('FLIGHT_PLAN_TCP', filename)
+crd = read_adaptation_section('FLIGHT_PLAN_CRDMSG', filename)
+tt1 = read_adaptation_section('TCW_TDW_LISTS', filename)
+tt2 = read_adaptation_section('TCW_TDW_LISTS', filename, offset=1)
+
+full_file = []
+downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
+with open(os.path.join(downloads_folder, filename), "r") as file:
+    full_file = file.readlines()
+
+
+# In[ ]:
+
+
+data = []
+
+counter = 0
+for c in send['Channel'].unique():
+    e = {}
+
+    i = int(tt2.loc[tt2['Coord. Channel'] == c, '#.'].iloc[0])
+    t1 = tt1[tt1['#.'] == str(i)].iloc[0]
+    t2 = tt2[tt2['#.'] == str(i)].iloc[0]
+    c0 = crd[crd['Channel'] == c].iloc[0]
+    
+    e['id'] = t1['List ID']
+    e['title'] = t1['Title'].replace('.      ', '')
+    e['showTitle'] = t1['Show Title']
+    e['numberOfEntries'] = t1['Number Entries']
+    e['persistentEntries'] = t1['Prstnt Entries'] == 'Y'
+    e['showMore'] = t1['More NN/MM'] == 'Y'
+
+    cc = {}
+    cc['id'] = gen_ulid()
+    cc['airport'] = c0['Airport']
+    cc['flightType'] = c0['Flight Type']
+    flight_rules = ['ALL', 'IFR', 'VFR', 'OTP', 'IFR/OTP', 'VFR/OTP']
+    cc['flight_rules'] = flight_rules[int('0' + c0['Flight Rules'])]
+
+    sending_tcps = []
+    for tcp in send[send['Channel'] == c]['Sending TCPs'].tolist():
+        sending_tcps.append({'subset': tcp[0], 'sectorId': tcp[1]})
+    cc['sendingTcps'] = sending_tcps
+
+    receiving_tcps = []
+    for index, row in rec[rec['Channel'] == c].iterrows():
+        receiver = {}
+        tcp = row['Receiving TCP']
+        receiver['receivingTcp'] = {'subset': tcp[0], 'sectorId': tcp[1]}
+        receiver['autoAcknowledge'] = row['Auto. Ack.'] == 'Y'
+        receiving_tcps.append(receiver)
+    cc['receivers'] = receiving_tcps
+ 
+    e['coordinationChannel'] = cc
+    e['showLineNumbers']  = t2['Line Numbers'] == 'Y'
+    sortFieldDict = {'ACID': 'AircraftId', 'DZ Entry': 'DZEntry', 'Drop Zone Entry Time': 'DZEntry', \
+                     'Aircraft ID': 'AircraftID', '': 'None', 'Coord Seq': 'CoordinationSequence', \
+                     'Coordination Sequence': 'CoordinationSequence', 'Coord Time': 'CoordinationTime', \
+                     'Coordination Time': 'Coord Time', 'Range from Airport': 'Range', \
+                     'Add at end of list': 'End', 'Creation Time': 'CreationTime'}
+    sortFieldValue = ''
+    if 'Prim Sort Field' in t2: 
+        sortFieldValue = t2['Prim Sort Field']
+    elif 'Sort Field' in t2:
+        sortFieldValue = t2['Sort Field']
+    if sortFieldValue in sortFieldDict:
+        e['sortField'] = sortFieldDict[sortFieldValue]
+
+    if 'Prim Sort Dir' in t2:
+        e['sortIsAscending'] = t2['Prim Sort Dir'] == 'A'
+    elif 'Sort Direction' in t2:
+        e['sortIsAscending'] = t2['Sort Direction'] == 'A'
+    else:
+        e['sortIsAscending'] = True
+    
+    # e['adaptation_name'] = ''
+    # for line in full_file:
+    #     if '; ' + e['id'] in line:
+    #         e['adaptation_name'] = line.split(' ')[0].replace('\t', '')
+    #         break
+
+    data.append(e)
+
+    if counter == 0:
+        pprint(e)
+        counter += 1
+
+downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
+out_name = filename.replace('.txt', '') + '_lists.json'
+with open(os.path.join(downloads_folder, out_name), "w") as file:
+    json.dump(data, file, indent=4)
+
