@@ -1,9 +1,4 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
+# Place file in Downloads folder, rename as neeeded.
 FILE_IN = 'adapt.txt'
 
 
@@ -188,6 +183,7 @@ for c in send['Channel'].unique():
         sortFieldValue = t2['Sort Field']
     if sortFieldValue in sortFieldDict:
         e['sortField'] = sortFieldDict[sortFieldValue]
+    e['sortField'] = 'CoordinationSequence' # Temporary until other values are supported
 
     if 'Prim Sort Dir' in t2:
         e['sortIsAscending'] = t2['Prim Sort Dir'] == 'A'
