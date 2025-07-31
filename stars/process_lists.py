@@ -170,6 +170,7 @@ for c in send['Channel'].unique():
     for index, row in rec[rec['Channel'] == c].iterrows():
         receiver = {}
         tcp = row['Receiving TCP']
+        receiver['key'] = gen_ulid()
         receiver['receivingTcp'] = {'subset': tcp[0], 'sectorId': tcp[1]}
         receiver['autoAcknowledge'] = row['Auto. Ack.'] == 'Y'
         receiving_tcps.append(receiver)
