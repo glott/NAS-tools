@@ -154,7 +154,10 @@ for c in send['Channel'].unique():
     cc = {}
     cc['id'] = gen_ulid()
     cc['airport'] = c0['Airport']
-    cc['flightType'] = c0['Flight Type']
+
+    flightTypeDict = {'': 'Any', 'P': 'Departure', 'A': 'Arrival', 'E': 'Overflight}
+    cc['flightType'] = flightTypeDict[c0['Flight Type']]
+    
     flight_rules = ['ALL', 'IFR', 'VFR', 'OTP', 'IFR/OTP', 'VFR/OTP']
     cc['flight_rules'] = flight_rules[int('0' + c0['Flight Rules'])]
 
