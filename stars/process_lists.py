@@ -143,7 +143,10 @@ for c in send['Channel'].unique():
     
     e['id'] = t1['List ID']
     e['title'] = t1['Title'].replace('.      ', '')
-    e['showTitle'] = t1['Show Title']
+    
+    showTitleDict = {'A': 'Always', 'N': 'Never', 'E': 'DisplayIfEntries'}
+    e['showTitle'] = showTitleDict[t1['Show Title']]
+    
     e['numberOfEntries'] = t1['Number Entries']
     e['persistentEntries'] = t1['Prstnt Entries'] == 'Y'
     e['showMore'] = t1['More NN/MM'] == 'Y'
