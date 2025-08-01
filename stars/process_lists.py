@@ -1,14 +1,14 @@
-FILE_IN = 'den.txt'     # File name in Downloads folder
-MAIN_TCP = '1I'         # Main TCP, will output window position if found
+FILE_IN = 'mia.txt'     # File name in Downloads folder
+MAIN_TCP = '1D'         # Main TCP, will output window position if found
 
 ################################################################################
 import os, time, re, json, subprocess, sys
 import importlib.util as il
 
-# if None in [il.find_spec('python-ulid'), il.find_spec('pyperclip'), il.find_spec('pandas')]:
-#     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'python-ulid']);
-#     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pyperclip']);
-#     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pandas']);
+if None in [il.find_spec('python-ulid'), il.find_spec('pyperclip'), il.find_spec('pandas')]:
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'python-ulid']);
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pyperclip']);
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pandas']);
     
 from ulid import ULID
 import pyperclip
