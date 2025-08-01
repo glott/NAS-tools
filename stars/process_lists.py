@@ -1,10 +1,7 @@
-# Place file in Downloads folder, rename as neeeded.
-FILE_IN = 'adapt.txt'
+# Place file in Downloads folder, rename as needed.
+FILE_IN = 'fat.txt'
 
-
-# In[ ]:
-
-
+################################################################################
 import os, time, re, json, subprocess, sys
 import importlib.util as il
 
@@ -110,10 +107,6 @@ def read_adaptation_section(section_header, filename, offset=0):
     
     return csv_text_to_dataframe(text)
 
-
-# In[ ]:
-
-
 filename = FILE_IN
 send = read_adaptation_section('SENDING_FP_TCP', filename)
 rec = read_adaptation_section('FLIGHT_PLAN_TCP', filename)
@@ -125,10 +118,6 @@ full_file = []
 downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
 with open(os.path.join(downloads_folder, filename), "r") as file:
     full_file = file.readlines()
-
-
-# In[ ]:
-
 
 data = []
 
@@ -178,19 +167,58 @@ for c in send['Channel'].unique():
  
     e['coordinationChannel'] = cc
     e['showLineNumbers']  = t2['Line Numbers'] == 'Y'
-    sortFieldDict = {'ACID': 'AircraftId', 'DZ Entry': 'DZEntry', 'Drop Zone Entry Time': 'DZEntry', \
-                     'Aircraft ID': 'AircraftID', '': 'None', 'Coord Seq': 'CoordinationSequence', \
-                     'Coordination Sequence': 'CoordinationSequence', 'Coord Time': 'CoordinationTime', \
-                     'Coordination Time': 'Coord Time', 'Range from Airport': 'Range', \
-                     'Add at end of list': 'End', 'Creation Time': 'CreationTime'}
+
+    sortFieldDict = {
+        'ACID': 'AircraftId',
+        'Add at End of List': 'AddAtEndOfList',
+        'Add at end of list': 'AddAtEndOfList',
+        'Add to end': 'AddAtEndOfList',
+        'Aircraft Category': 'AircraftCategory',
+        'Aircraft ID': 'AircraftId',
+        'Aircraft Type': 'AircraftType',
+        'Assigned Altitude': 'AssignedAltitude',
+        'Assigned Beacon Code': 'AssignedBeaconCode',
+        'Coord Seq': 'CoordinationSequence',
+        'Coord Time': 'CoordinationTime',
+        'Coordination Sequence': 'CoordinationSequence',
+        'Coordination Time': 'CoordinationTime',
+        'Create': 'CreationTime',
+        'Creation Time': 'CreationTime',
+        'Drop Zone Entry Time': 'DropZoneEntryTime',
+        'DZ Entry': 'DropZoneEntryTime',
+        'Entry Fix': 'EntryFix',
+        'Exit Fix': 'ExitFix',
+        'Flight Rules': 'FlightRules',
+        'Landing Runway': 'LandingRunway',
+        'Mode 3 Code': 'Mode3Code',
+        'Mode C Altitude': 'ModeCAltitude',
+        'NAS Code': 'NasCode',
+        'Number of Aircraft': 'NumberOfAircraft',
+        'Owner TCP': 'OwnerTcp',
+        'Pilot Reported Level': 'PilotReportedLevel',
+        'Range from Airport': 'RangeFromAirport',
+        'Range': 'RangeFromAirport',
+        'Scratchpad': 'Scratchpad',
+        'Special Condition Code': 'SpecialConditionCode',
+        'Speed': 'Speed',
+        'Tcid': 'Tcid',
+        'Time of Alert': 'TimeOfAlert',
+        'Type of Flight': 'TypeOfFlight'
+    }
     sortFieldValue = ''
+
     if 'Prim Sort Field' in t2: 
         sortFieldValue = t2['Prim Sort Field']
     elif 'Sort Field' in t2:
         sortFieldValue = t2['Sort Field']
     if sortFieldValue in sortFieldDict:
         e['sortField'] = sortFieldDict[sortFieldValue]
-    e['sortField'] = 'CoordinationSequence' # Temporary until other values are supported
+
+    # Temporary until other values are supported
+    if e['sortField'] != 'CoordinationSequence':
+        print(e['sortField'])
+        e['sortField'] = 'CoordinationSequence'
+        e['title'] = e['title'] + ' DO NOT USE'
 
     if 'Prim Sort Dir' in t2:
         e['sortIsAscending'] = t2['Prim Sort Dir'] == 'A'
@@ -199,20 +227,14 @@ for c in send['Channel'].unique():
     else:
         e['sortIsAscending'] = True
     
-    # e['adaptation_name'] = ''
-    # for line in full_file:
-    #     if '; ' + e['id'] in line:
-    #         e['adaptation_name'] = line.split(' ')[0].replace('\t', '')
-    #         break
 
     data.append(e)
 
     if counter == 0:
-        pprint(e)
+        # pprint(e)
         counter += 1
 
 downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
 out_name = filename.replace('.txt', '') + '_lists.json'
 with open(os.path.join(downloads_folder, out_name), "w") as file:
     json.dump(data, file, indent=4)
-
