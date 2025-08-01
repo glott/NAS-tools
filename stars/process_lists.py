@@ -1,5 +1,5 @@
-FILE_IN = 'den.txt'     # File name in Downloads folder
-MAIN_TCP = '1I'         # Main TCP, will output window position if found
+FILE_IN = 'mia.txt'     # File name in Downloads folder
+MAIN_TCP = '1D'         # Main TCP, will output window position if found
 
 ################################################################################
 import os, time, re, json, subprocess, sys
