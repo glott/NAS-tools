@@ -228,7 +228,7 @@ with open(os.path.join(downloads_folder, f + '_lists.json'), "w") as file:
     json.dump(data, file, indent=4)
 
 with open(os.path.join(downloads_folder, f + '_list_configs.json'), "w") as file:
-    json.dump(list_configs, file, indent=4)
+    json.dump(list_configs, file, indent=2)
 
 with open(os.path.join(downloads_folder, f + '_info.txt'), "w") as file:
     file.write('\n'.join(info_out))
