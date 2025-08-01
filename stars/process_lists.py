@@ -1,5 +1,5 @@
-FILE_IN = 'mia.txt'     # File name in Downloads folder
-MAIN_TCP = '1D'         # Main TCP, will output window position if found
+FILE_IN = 'den.txt'     # File name in Downloads folder
+MAIN_TCP = '1I'         # Main TCP, will output window position if found
 
 ################################################################################
 import os, time, re, json, subprocess, sys
@@ -115,7 +115,7 @@ tt1 = read_adaptation_section('TCW_TDW_LISTS', filename)
 tt2 = read_adaptation_section('TCW_TDW_LISTS', filename, offset=1)
 cw = read_adaptation_section('CONSOL_WINDOWS', filename)
 
-showTitleDict = {'A': 'Always', 'N': 'Never', 'E': 'DisplayIfEntries'}
+showTitleDict = {'A': 'AlwaysDisplay', 'N': 'NeverDisplay', 'E': 'DisplayIfEntries'}
 flightTypeDict = {'': 'Any', 'P': 'Departure', 'A': 'Arrival', 'E': 'Overflight'}
 flight_rules = ['ALL', 'IFR', 'VFR', 'OTP', 'IFR/OTP', 'VFR/OTP']
 sortFieldDict = {
@@ -201,7 +201,7 @@ for idx, t1 in tt1[(tt1['Title'].str.strip() != '') & (tt1['List ID'].str.starts
         e['coordinationChannel'] = cc
 
     e['showLineNumbers']  = t2['Line Numbers'] == 'Y'
-    e['sortField'] = t2.get('Prim Sort Field', t2.get('Sort Field'))
+    e['sortField'] = sortFieldDict[t2.get('Prim Sort Field', t2.get('Sort Field'))]
     e['sortIsAscending'] = t2.get('Prim Sort Dir', t2.get('Sort Direction')) == 'A'
 
     data.append(e)
