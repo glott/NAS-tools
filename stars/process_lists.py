@@ -1,5 +1,5 @@
-FILE_IN = 'mia.txt'     # File name in Downloads folder
-MAIN_TCP = '1D'         # Main TCP, will output window position if found
+FILE_IN = 'den.txt'     # File name in Downloads folder
+MAIN_TCP = '1I'         # Main TCP, will output window position if found
 
 ################################################################################
 import os, time, re, json, subprocess, sys
@@ -174,6 +174,7 @@ for idx, t1 in tt1[(tt1['Title'].str.strip() != '') & (tt1['List ID'].str.starts
     e['showMore'] = t1['More NN/MM'] == 'Y'
 
     if c != 0:
+        c = str(c)
         c0 = crd[crd['Channel'] == str(c)].iloc[0]
         cc = {}
 
