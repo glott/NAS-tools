@@ -1,14 +1,14 @@
-# Place file in Downloads folder, rename as needed.
-FILE_IN = 'fat.txt'
+FILE_IN = 'mia.txt'     # File name in Downloads folder
+MAIN_TCP = '1D'         # Main TCP, will output window position if found
 
 ################################################################################
 import os, time, re, json, subprocess, sys
 import importlib.util as il
 
-if None in [il.find_spec('python-ulid'), il.find_spec('pyperclip'), il.find_spec('pandas')]:
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'python-ulid']);
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pyperclip']);
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pandas']);
+# if None in [il.find_spec('python-ulid'), il.find_spec('pyperclip'), il.find_spec('pandas')]:
+#     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'python-ulid']);
+#     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pyperclip']);
+#     subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pandas']);
     
 from ulid import ULID
 import pyperclip
@@ -113,62 +113,12 @@ rec = read_adaptation_section('FLIGHT_PLAN_TCP', filename)
 crd = read_adaptation_section('FLIGHT_PLAN_CRDMSG', filename)
 tt1 = read_adaptation_section('TCW_TDW_LISTS', filename)
 tt2 = read_adaptation_section('TCW_TDW_LISTS', filename, offset=1)
+cw = read_adaptation_section('CONSOL_WINDOWS', filename)
 
-full_file = []
-downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
-with open(os.path.join(downloads_folder, filename), "r") as file:
-    full_file = file.readlines()
-
-data = []
-
-counter = 0
-for c in send['Channel'].unique():
-    e = {}
-
-    i = int(tt2.loc[tt2['Coord. Channel'] == c, '#.'].iloc[0])
-    t1 = tt1[tt1['#.'] == str(i)].iloc[0]
-    t2 = tt2[tt2['#.'] == str(i)].iloc[0]
-    c0 = crd[crd['Channel'] == c].iloc[0]
-    
-    e['id'] = t1['List ID']
-    e['title'] = t1['Title'].replace('.      ', '')
-    
-    showTitleDict = {'A': 'Always', 'N': 'Never', 'E': 'DisplayIfEntries'}
-    e['showTitle'] = showTitleDict[t1['Show Title']]
-    
-    e['numberOfEntries'] = t1['Number Entries']
-    e['persistentEntries'] = t1['Prstnt Entries'] == 'Y'
-    e['showMore'] = t1['More NN/MM'] == 'Y'
-
-    cc = {}
-    cc['id'] = gen_ulid()
-    cc['airport'] = c0['Airport']
-
-    flightTypeDict = {'': 'Any', 'P': 'Departure', 'A': 'Arrival', 'E': 'Overflight'}
-    cc['flightType'] = flightTypeDict[c0['Flight Type']]
-    
-    flight_rules = ['ALL', 'IFR', 'VFR', 'OTP', 'IFR/OTP', 'VFR/OTP']
-    cc['flight_rules'] = flight_rules[int('0' + c0['Flight Rules'])]
-
-    sending_tcps = []
-    for tcp in send[send['Channel'] == c]['Sending TCPs'].tolist():
-        sending_tcps.append({'subset': tcp[0], 'sectorId': tcp[1]})
-    cc['sendingTcps'] = sending_tcps
-
-    receiving_tcps = []
-    for index, row in rec[rec['Channel'] == c].iterrows():
-        receiver = {}
-        tcp = row['Receiving TCP']
-        receiver['key'] = gen_ulid()
-        receiver['receivingTcp'] = {'subset': tcp[0], 'sectorId': tcp[1]}
-        receiver['autoAcknowledge'] = row['Auto. Ack.'] == 'Y'
-        receiving_tcps.append(receiver)
-    cc['receivers'] = receiving_tcps
- 
-    e['coordinationChannel'] = cc
-    e['showLineNumbers']  = t2['Line Numbers'] == 'Y'
-
-    sortFieldDict = {
+showTitleDict = {'A': 'Always', 'N': 'Never', 'E': 'DisplayIfEntries'}
+flightTypeDict = {'': 'Any', 'P': 'Departure', 'A': 'Arrival', 'E': 'Overflight'}
+flight_rules = ['ALL', 'IFR', 'VFR', 'OTP', 'IFR/OTP', 'VFR/OTP']
+sortFieldDict = {
         'ACID': 'AircraftId',
         'Add at End of List': 'AddAtEndOfList',
         'Add at end of list': 'AddAtEndOfList',
@@ -205,36 +155,79 @@ for c in send['Channel'].unique():
         'Time of Alert': 'TimeOfAlert',
         'Type of Flight': 'TypeOfFlight'
     }
-    sortFieldValue = ''
 
-    if 'Prim Sort Field' in t2: 
-        sortFieldValue = t2['Prim Sort Field']
-    elif 'Sort Field' in t2:
-        sortFieldValue = t2['Sort Field']
-    if sortFieldValue in sortFieldDict:
-        e['sortField'] = sortFieldDict[sortFieldValue]
-
-    # Temporary until other values are supported
-    if e['sortField'] != 'CoordinationSequence':
-        print(e['sortField'])
-        e['sortField'] = 'CoordinationSequence'
-        e['title'] = e['title'] + ' DO NOT USE'
-
-    if 'Prim Sort Dir' in t2:
-        e['sortIsAscending'] = t2['Prim Sort Dir'] == 'A'
-    elif 'Sort Direction' in t2:
-        e['sortIsAscending'] = t2['Sort Direction'] == 'A'
-    else:
-        e['sortIsAscending'] = True
+data = []
+list_configs = {}
+info_out = []
+for idx, t1 in tt1[(tt1['Title'].str.strip() != '') & (tt1['List ID'].str.startswith('P'))].iterrows():
     
+    i = int(t1['#.'])
+    t2 = tt2[tt2['#.'] == str(i)].iloc[0]
+    c = int(t2['Coord. Channel'])
+
+    e = {}
+    e['id'] = t1['List ID']
+    e['title'] = t1['Title'] # .replace('.      ', '')
+    e['showTitle'] = showTitleDict[t1['Show Title']]
+    e['numberOfEntries'] = int(t1['Number Entries'])
+    e['persistentEntries'] = t1['Prstnt Entries'] == 'Y'
+    e['showMore'] = t1['More NN/MM'] == 'Y'
+
+    if c != 0:
+        c0 = crd[crd['Channel'] == str(c)].iloc[0]
+        cc = {}
+
+        cc['id'] = gen_ulid()
+        cc['airport'] = c0['Airport']
+    
+        cc['flightType'] = flightTypeDict[c0['Flight Type']]
+        cc['flight_rules'] = flight_rules[int('0' + c0['Flight Rules'])]
+    
+        sending_tcps = []
+        for tcp in send[send['Channel'] == c]['Sending TCPs'].tolist():
+            sending_tcps.append({'subset': tcp[0], 'sectorId': tcp[1]})
+        cc['sendingTcps'] = sending_tcps
+    
+        receiving_tcps = []
+        for index, row in rec[rec['Channel'] == c].iterrows():
+            receiver = {}
+            tcp = row['Receiving TCP']
+            receiver['key'] = gen_ulid()
+            receiver['receivingTcp'] = {'subset': tcp[0], 'sectorId': tcp[1]}
+            receiver['autoAcknowledge'] = row['Auto. Ack.'] == 'Y'
+            receiving_tcps.append(receiver)
+        cc['receivers'] = receiving_tcps
+        
+        e['coordinationChannel'] = cc
+
+    e['showLineNumbers']  = t2['Line Numbers'] == 'Y'
+    e['sortField'] = t2.get('Prim Sort Field', t2.get('Sort Field'))
+    e['sortIsAscending'] = t2.get('Prim Sort Dir', t2.get('Sort Direction')) == 'A'
 
     data.append(e)
 
-    if counter == 0:
-        # pprint(e)
-        counter += 1
+    config_data = cw[(cw['Title'] == e['title']) & (cw['logical_tcp'] == MAIN_TCP)]
+    if not config_data.empty:
+        cd = {}
+        cd['Visible'] = False
+        cd['Location'] = config_data['Flight Left'].iloc[0] + ', ' + config_data['Flight Top'].iloc[0]
+        cd['NumberOfLines'] = e['numberOfEntries']
+        cd['ShowTitleUntil'] = None
+        list_configs[e['id']] = cd
+
+    info_out.append(e['id'] + '\t' + e['title'])
+
+info_out.sort()
+print('\n'.join(info_out))
 
 downloads_folder = os.path.join(os.path.expanduser("~"), "Downloads")
-out_name = filename.replace('.txt', '') + '_lists.json'
-with open(os.path.join(downloads_folder, out_name), "w") as file:
+f = filename.replace('.txt', '')
+
+with open(os.path.join(downloads_folder, f + '_lists.json'), "w") as file:
     json.dump(data, file, indent=4)
+
+with open(os.path.join(downloads_folder, f + '_list_configs.json'), "w") as file:
+    json.dump(list_configs, file, indent=4)
+
+with open(os.path.join(downloads_folder, f + '_info.txt'), "w") as file:
+    file.write('\n'.join(info_out))
