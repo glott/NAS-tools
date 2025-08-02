@@ -1,5 +1,5 @@
-FILE_IN = 'mia.txt'     # File name in Downloads folder
-MAIN_TCP = '1D'         # Main TCP, will output window position if found
+FILE_IN = 'pbi.txt'     # File name in Downloads folder
+MAIN_TCP = '1B'         # Main TCP, will output window position if found
 
 ################################################################################
 import os, time, re, json, subprocess, sys
@@ -159,11 +159,14 @@ sortFieldDict = {
 data = []
 list_configs = {}
 info_out = []
-for idx, t1 in tt1[(tt1['Title'].str.strip() != '') & (tt1['List ID'].str.startswith('P'))].iterrows():
+for idx, t1 in tt1[(tt1['Title'].str.strip() != '') & \
+    ((tt1['List ID'].str.startswith('P')) | (tt1['List ID'].str.startswith('T')))].iterrows():
     
     i = int(t1['#.'])
     t2 = tt2[tt2['#.'] == str(i)].iloc[0]
-    c = int(t2['Coord. Channel'])
+    c = t2['Coord. Channel']
+    if len(c) == 0:
+        continue
 
     e = {}
     e['id'] = t1['List ID']
@@ -173,9 +176,8 @@ for idx, t1 in tt1[(tt1['Title'].str.strip() != '') & (tt1['List ID'].str.starts
     e['persistentEntries'] = t1['Prstnt Entries'] == 'Y'
     e['showMore'] = t1['More NN/MM'] == 'Y'
 
-    if c != 0:
-        c = str(c)
-        c0 = crd[crd['Channel'] == str(c)].iloc[0]
+    if c != '0':
+        c0 = crd[crd['Channel'] == c].iloc[0]
         cc = {}
 
         cc['id'] = gen_ulid()
@@ -198,8 +200,11 @@ for idx, t1 in tt1[(tt1['Title'].str.strip() != '') & (tt1['List ID'].str.starts
             receiver['autoAcknowledge'] = row['Auto. Ack.'] == 'Y'
             receiving_tcps.append(receiver)
         cc['receivers'] = receiving_tcps
-        
+
         e['coordinationChannel'] = cc
+
+    elif e['id'].startswith('T'):               # Disable non-coordination T lists
+        continue        
 
     e['showLineNumbers']  = t2['Line Numbers'] == 'Y'
     e['sortField'] = sortFieldDict[t2.get('Prim Sort Field', t2.get('Sort Field'))]
