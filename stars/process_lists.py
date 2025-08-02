@@ -216,7 +216,14 @@ for idx, t1 in tt1[(tt1['Title'].str.strip() != '') & (tt1['List ID'].str.starts
         cd['ShowTitleUntil'] = None
         list_configs[e['id']] = cd
 
-    info_out.append(e['id'] + '\t' + e['title'])
+    info = e['id'] + '\t' + e['title']
+    if 'coordinationChannel' in e:
+        cc = e['coordinationChannel']
+        sv = '/'.join([v['subset'][0] + v['sectorId'][0] for v in cc['sendingTcps']])
+        rv = '/'.join([v['receivingTcp']['subset'][0] + v['receivingTcp']['sectorId'][0] for v in cc['receivers']])
+        info += '\t' + sv + ' -> ' + rv
+
+    info_out.append(info)
 
 info_out.sort()
 print('\n'.join(info_out))
